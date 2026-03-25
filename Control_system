@@ -84,3 +84,52 @@ int GetTimeProcess()
     return g_timeProcessDone;
 }
 
+/ Выходные функции
+void PumpControl(int state)
+{
+    g_pumpState = state;
+}
+
+void ReadyIndicatorControl(int state)
+{
+    g_readyIndicatorState = state;
+}
+
+void BlockIndicatorControl(int state)
+{
+    g_blockIndicatorState = state;
+}
+
+void TimeProcessControl(int state)
+{
+    // 0 - остановить / сбросить отсчёт
+    // 1 - начать отсчёт времени распыления
+    if (state == 1)
+    {
+        g_timeProcessActive = 1;
+        g_timeProcessDone = 0;
+        g_timeRemainingMs = SPRAY_TIME_MS;
+    }
+    else
+    {
+        g_timeProcessActive = 0;
+        g_timeProcessDone = 0;
+        g_timeRemainingMs = 0;
+    }
+}
+
+void TimerTick(int deltaTimeMs)
+{
+    if (g_timeProcessActive == 1)
+    {
+        g_timeRemainingMs = g_timeRemainingMs - deltaTimeMs;
+
+        if (g_timeRemainingMs <= 0)
+        {
+            g_timeRemainingMs = 0;
+            g_timeProcessActive = 0;
+            g_timeProcessDone = 1;
+        }
+    }
+}
+
