@@ -1,0 +1,12 @@
+#include <studio.h>
+#include <iostream>
+int main(){
+
+}
+
+enum State{
+  ready,   // готовность
+  dispensing,  // дозатор работает
+  WaitHandRemoving,  //ожидание когда уберут руку
+  blocked  // сработало блокирующее услвоие
+}
