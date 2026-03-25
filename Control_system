@@ -49,3 +49,38 @@ int GetTimeProcess()
     // 1 - требуемое время распыления завершилось
     return g_timeProcessDone;
 }
+
+int g_pumpState = 0;            // 0 - выключен, 1 - включен
+int g_readyIndicatorState = 0;  // 0 - выключен, 1 - включен
+int g_blockIndicatorState = 0;  // 0 - выключен, 1 - включен
+
+
+// Имитация процесса отсчета времени распыления
+const int SPRAY_TIME_MS = 400;
+
+int g_timeProcessActive = 0;     // 0 - таймер не активен, 1 - таймер активен
+int g_timeProcessDone = 0;       // 0 - время не завершилось, 1 - завершилось
+int g_timeRemainingMs = 0;       // сколько миллисекунд осталось
+
+int GetHandState()
+{
+    return g_handState;
+}
+
+int GetBatteryState()
+{
+    return g_batteryState;
+}
+
+int GetLiquidState()
+{
+    return g_liquidState;
+}
+
+int GetTimeProcess()
+{
+    // 0 - требуемое время распыления не завершилось
+    // 1 - требуемое время распыления завершилось
+    return g_timeProcessDone;
+}
+
