@@ -10,3 +10,27 @@ enum State{
   WaitHandRemoving,  //ожидание когда уберут руку
   blocked  // сработало блокирующее услвоие
 }
+
+State = CurrentState = ready;
+int DispenseTimer = 0;
+
+const int DISPENSE_TIME_MS = 400; // длительность дозирования
+
+
+int handState = 0;   // 0 - руки нет, 1 - рука есть
+int powerState = 1;  // 0 - питания нет, 1 - питание в норме
+int liquidState = 1; // 0 - жидкости нет, 1 - жидкость есть
+
+int pumpState = 0;           // 0 - насос выключен, 1 - насос включен
+int readyIndicatorState = 0; // 0- выключен, 1 - включен
+int blockIndicatorState = 0; // 0 - выключен, 1 - включен
+
+int GetHandState(){
+  return handState;
+}
+int GetPowerState(){
+  return powerState;
+}
+int GetLiquidState(){
+  
+}
