@@ -50,40 +50,6 @@ int GetTimeProcess()
     return g_timeProcessDone;
 }
 
-int g_pumpState = 0;            // 0 - выключен, 1 - включен
-int g_readyIndicatorState = 0;  // 0 - выключен, 1 - включен
-int g_blockIndicatorState = 0;  // 0 - выключен, 1 - включен
-
-
-// Имитация процесса отсчета времени распыления
-const int SPRAY_TIME_MS = 400;
-
-int g_timeProcessActive = 0;     // 0 - таймер не активен, 1 - таймер активен
-int g_timeProcessDone = 0;       // 0 - время не завершилось, 1 - завершилось
-int g_timeRemainingMs = 0;       // сколько миллисекунд осталось
-
-int GetHandState()
-{
-    return g_handState;
-}
-
-int GetBatteryState()
-{
-    return g_batteryState;
-}
-
-int GetLiquidState()
-{
-    return g_liquidState;
-}
-
-int GetTimeProcess()
-{
-    // 0 - требуемое время распыления не завершилось
-    // 1 - требуемое время распыления завершилось
-    return g_timeProcessDone;
-}
-
 / Выходные функции
 void PumpControl(int state)
 {
@@ -184,3 +150,61 @@ void UpdateSystem()
     {
         currentState = READY;
     }
+
+   // Логика состояний
+    if (currentState == READY)
+    {
+        if (hand == 1)
+        {
+            currentState = DISPENSING;
+            TimeProcessControl(1); // запуск отсчёта времени распыления
+        }
+    }
+    else if (currentState == DISPENSING)
+    {
+        if (timeDone == 1)
+        {
+            PumpControl(0);
+            currentState = WAIT_HAND_REMOVE;
+            g_timeProcessDone = 0; // сброс сигнала завершения после обработки
+        }
+    }
+    else if (currentState == WAIT_HAND_REMOVE)
+    {
+        if (hand == 0)
+        {
+            currentState = READY;
+        }
+    }
+
+    ApplyOutputs();
+}
+
+void PrintSystemState()
+{
+    std::cout << "State: ";
+
+    if (currentState == READY)
+    {
+        std::cout << "READY";
+    }
+    else if (currentState == DISPENSING)
+    {
+        std::cout << "DISPENSING";
+    }
+    else if (currentState == WAIT_HAND_REMOVE)
+    {
+        std::cout << "WAIT_HAND_REMOVE";
+    }
+    else if (currentState == BLOCKED)
+    {
+        std::cout << "BLOCKED";
+    }
+
+    std::cout
+        << " | Pump=" << g_pumpState
+        << " | ReadyIndicator=" << g_readyIndicatorState
+        << " | BlockIndicator=" << g_blockIndicatorState
+        << " | TimeDone=" << g_timeProcessDone
+        << "\n";
+}
