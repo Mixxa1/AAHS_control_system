@@ -50,7 +50,7 @@ int GetTimeProcess()
     return g_timeProcessDone;
 }
 
-/ Выходные функции
+// Выходные функции
 void PumpControl(int state)
 {
     g_pumpState = state;
