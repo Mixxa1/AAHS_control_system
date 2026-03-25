@@ -208,3 +208,56 @@ void PrintSystemState()
         << " | TimeDone=" << g_timeProcessDone
         << "\n";
 }
+
+int main()
+{
+    std::cout << "Initial state:\n";
+    UpdateSystem();
+    PrintSystemState();
+
+    std::cout << "\n1) Рука обнаружена:\n";
+    g_handState = 1;
+    UpdateSystem();
+    PrintSystemState();
+
+    std::cout << "\n2) Прошло 200 мс:\n";
+    TimerTick(200);
+    UpdateSystem();
+    PrintSystemState();
+
+    std::cout << "\n3) Прошло еще 250 мс:\n";
+    TimerTick(250);
+    UpdateSystem();
+    PrintSystemState();
+
+    std::cout << "\n4) Рука все еще в зоне:\n";
+    UpdateSystem();
+    PrintSystemState();
+
+    std::cout << "\n5) Руку убрали:\n";
+    g_handState = 0;
+    UpdateSystem();
+    PrintSystemState();
+
+    std::cout << "\n6) Жидкость закончилась:\n";
+    g_liquidState = 0;
+    UpdateSystem();
+    PrintSystemState();
+
+    std::cout << "\n7) Жидкость восстановлена:\n";
+    g_liquidState = 1;
+    UpdateSystem();
+    PrintSystemState();
+
+    std::cout << "\n8) Питание пропало:\n";
+    g_batteryState = 0;
+    UpdateSystem();
+    PrintSystemState();
+
+    std::cout << "\n9) Питание восстановлено:\n";
+    g_batteryState = 1;
+    UpdateSystem();
+    PrintSystemState();
+
+    return 0;
+}
