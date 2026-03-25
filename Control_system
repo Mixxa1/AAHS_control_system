@@ -133,3 +133,54 @@ void TimerTick(int deltaTimeMs)
     }
 }
 
+
+void ApplyOutputs()
+{
+    if (currentState == READY)
+    {
+        PumpControl(0);
+        ReadyIndicatorControl(1);
+        BlockIndicatorControl(0);
+    }
+    else if (currentState == DISPENSING)
+    {
+        PumpControl(1);
+        ReadyIndicatorControl(0);
+        BlockIndicatorControl(0);
+    }
+    else if (currentState == WAIT_HAND_REMOVE)
+    {
+        PumpControl(0);
+        ReadyIndicatorControl(0);
+        BlockIndicatorControl(0);
+    }
+    else if (currentState == BLOCKED)
+    {
+        PumpControl(0);
+        ReadyIndicatorControl(0);
+        BlockIndicatorControl(1);
+    }
+}
+
+void UpdateSystem()
+{
+    int hand = GetHandState();
+    int battery = GetBatteryState();
+    int liquid = GetLiquidState();
+    int timeDone = GetTimeProcess();
+
+    //Проверка блокирующих условий
+    if (battery == 0 || liquid == 0)
+    {
+        currentState = BLOCKED;
+        TimeProcessControl(0);
+        ApplyOutputs();
+        return;
+    }
+
+    //Выход из блокировки при восстановлении ресурсов
+    //
+    if (currentState == BLOCKED && battery == 1 && liquid == 1)
+    {
+        currentState = READY;
+    }
