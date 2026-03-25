@@ -1,36 +1,51 @@
-#include <studio.h>
 #include <iostream>
-int main(){
 
+enum State
+{
+    READY,
+    DISPENSING,
+    WAIT_HAND_REMOVE,
+    BLOCKED
+};
+
+State currentState = READY;
+
+int g_handState = 0;      // 0 - рука не обнаружена, 1 - рука обнаружена
+int g_batteryState = 1;   // 0 - питания нет, 1 - питание в норме
+int g_liquidState = 1;    // 0 - жидкости нет, 1 - жидкость есть
+
+
+// Имитация выходных сигналов
+int g_pumpState = 0;            // 0 - выключен, 1 - включен
+int g_readyIndicatorState = 0;  // 0 - выключен, 1 - включен
+int g_blockIndicatorState = 0;  // 0 - выключен, 1 - включен
+
+
+// Имитация процесса отсчета времени распыления
+const int SPRAY_TIME_MS = 400;
+
+int g_timeProcessActive = 0;     // 0 - таймер не активен, 1 - таймер активен
+int g_timeProcessDone = 0;       // 0 - время не завершилось, 1 - завершилось
+int g_timeRemainingMs = 0;       // сколько миллисекунд осталось
+
+int GetHandState()
+{
+    return g_handState;
 }
 
-enum State{
-  ready,   // готовность
-  dispensing,  // дозатор работает
-  WaitHandRemoving,  //ожидание когда уберут руку
-  blocked  // сработало блокирующее услвоие
+int GetBatteryState()
+{
+    return g_batteryState;
 }
 
-State = CurrentState = ready;
-int DispenseTimer = 0;
-
-const int DISPENSE_TIME_MS = 400; // длительность дозирования
-
-
-int handState = 0;   // 0 - руки нет, 1 - рука есть
-int powerState = 1;  // 0 - питания нет, 1 - питание в норме
-int liquidState = 1; // 0 - жидкости нет, 1 - жидкость есть
-
-int pumpState = 0;           // 0 - насос выключен, 1 - насос включен
-int readyIndicatorState = 0; // 0- выключен, 1 - включен
-int blockIndicatorState = 0; // 0 - выключен, 1 - включен
-
-int GetHandState(){
-  return handState;
+int GetLiquidState()
+{
+    return g_liquidState;
 }
-int GetPowerState(){
-  return powerState;
-}
-int GetLiquidState(){
-  
+
+int GetTimeProcess()
+{
+    // 0 - требуемое время распыления не завершилось
+    // 1 - требуемое время распыления завершилось
+    return g_timeProcessDone;
 }
