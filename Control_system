@@ -10,66 +10,65 @@ enum State
 
 State currentState = READY;
 
+// Входные сигналы
 int g_handState = 0;      // 0 - рука не обнаружена, 1 - рука обнаружена
 int g_batteryState = 1;   // 0 - питания нет, 1 - питание в норме
 int g_liquidState = 1;    // 0 - жидкости нет, 1 - жидкость есть
 
+// Выходные сигналы
+int g_pumpState = 0;             // 0 - насос выключен, 1 - насос включен
+int g_readyIndicatorState = 0;   // 0 - индикатор готовности выключен, 1 - включен
+int g_blockIndicatorState = 0;   // 0 - индикатор блокировки выключен, 1 - включен
 
-// Имитация выходных сигналов
-int g_pumpState = 0;            // 0 - выключен, 1 - включен
-int g_readyIndicatorState = 0;  // 0 - выключен, 1 - включен
-int g_blockIndicatorState = 0;  // 0 - выключен, 1 - включен
-
-
-// Имитация процесса отсчета времени распыления
+// Параметры времени распыления
 const int SPRAY_TIME_MS = 400;
 
 int g_timeProcessActive = 0;     // 0 - таймер не активен, 1 - таймер активен
-int g_timeProcessDone = 0;       // 0 - время не завершилось, 1 - завершилось
-int g_timeRemainingMs = 0;       // сколько миллисекунд осталось
+int g_timeProcessDone = 0;       // 0 - время не завершилось, 1 - время завершилось
+int g_timeRemainingMs = 0;       // оставшееся время распыления
 
-int GetHandState()
+// Функции получения входных сигналов
+
+int GetHandState() // 0 - рука не обнаружена, 1 - рука обнаружена
 {
     return g_handState;
 }
 
-int GetBatteryState()
+int GetBatteryState() // 0 - питание отсутствует, 1 - питание в норме
 {
     return g_batteryState;
 }
 
-int GetLiquidState()
+int GetLiquidState() // 0 - жидкости нет, 1 - жидкость есть
 {
     return g_liquidState;
 }
 
-int GetTimeProcess()
+int GetTimeProcess() // 0 - требуемое время распыления не завершилось, 1 - требуемое время распыления завершилось
 {
-    // 0 - требуемое время распыления не завершилось
-    // 1 - требуемое время распыления завершилось
     return g_timeProcessDone;
 }
 
-// Выходные функции
-void PumpControl(int state)
+
+// Функции управления выходами
+void PumpControl(int state) // 0 - выключить насос, 1 - включить насос
 {
     g_pumpState = state;
 }
 
-void ReadyIndicatorControl(int state)
+void ReadyIndicatorControl(int state) // 0 - выключить индикатор готовности, 1 - включить индикатор готовности
 {
     g_readyIndicatorState = state;
 }
 
-void BlockIndicatorControl(int state)
+void BlockIndicatorControl(int state) // 0 - выключить индикатор блокировки, 1 - включить индикатор блокировки
 {
     g_blockIndicatorState = state;
 }
 
-void TimeProcessControl(int state)
+void TimeStatusCheck(int state) // 0 - остановка и сброс отсчёта времени распыления, 1 - начать отсчёт времени распыления
 {
-    // 0 - остановить / сбросить отсчёт
-    // 1 - начать отсчёт времени распыления
+
     if (state == 1)
     {
         g_timeProcessActive = 1;
@@ -84,11 +83,13 @@ void TimeProcessControl(int state)
     }
 }
 
+//Связующее звено между сигналами
+
 void TimerTick(int deltaTimeMs)
 {
     if (g_timeProcessActive == 1)
     {
-        g_timeRemainingMs = g_timeRemainingMs - deltaTimeMs;
+        g_timeRemainingMs -= deltaTimeMs;
 
         if (g_timeRemainingMs <= 0)
         {
@@ -98,7 +99,6 @@ void TimerTick(int deltaTimeMs)
         }
     }
 }
-
 
 void ApplyOutputs()
 {
@@ -128,6 +128,8 @@ void ApplyOutputs()
     }
 }
 
+// Основная функция автомата
+
 void UpdateSystem()
 {
     int hand = GetHandState();
@@ -135,29 +137,36 @@ void UpdateSystem()
     int liquid = GetLiquidState();
     int timeDone = GetTimeProcess();
 
-    //Проверка блокирующих условий
+    // Проверка блокирующих условий
     if (battery == 0 || liquid == 0)
     {
         currentState = BLOCKED;
-        TimeProcessControl(0);
+        TimeStatusCheck(0);   // остановить и сбросить таймер
         ApplyOutputs();
         return;
     }
 
-    //Выход из блокировки при восстановлении ресурсов
-    //
+    // Выход из блокировки после восстановления ресурсов
     if (currentState == BLOCKED && battery == 1 && liquid == 1)
     {
-        currentState = READY;
+
+        if (hand == 1)
+        {
+            currentState = WAIT_HAND_REMOVE;
+        }
+        else
+        {
+            currentState = READY;
+        }
     }
 
-   // Логика состояний
+    //  Основная логика состояний
     if (currentState == READY)
     {
         if (hand == 1)
         {
             currentState = DISPENSING;
-            TimeProcessControl(1); // запуск отсчёта времени распыления
+            TimeStatusCheck(1);   //  отсчёт времени распыления
         }
     }
     else if (currentState == DISPENSING)
@@ -166,7 +175,7 @@ void UpdateSystem()
         {
             PumpControl(0);
             currentState = WAIT_HAND_REMOVE;
-            g_timeProcessDone = 0; // сброс сигнала завершения после обработки
+            g_timeProcessDone = 0;   // сброс сигнала завершения после обработки
         }
     }
     else if (currentState == WAIT_HAND_REMOVE)
@@ -177,8 +186,12 @@ void UpdateSystem()
         }
     }
 
+    // Установка выходных сигналов по состоянию
     ApplyOutputs();
 }
+
+// Диагностический вывод
+
 
 void PrintSystemState()
 {
@@ -205,9 +218,13 @@ void PrintSystemState()
         << " | Pump=" << g_pumpState
         << " | ReadyIndicator=" << g_readyIndicatorState
         << " | BlockIndicator=" << g_blockIndicatorState
+        << " | TimeActive=" << g_timeProcessActive
         << " | TimeDone=" << g_timeProcessDone
+        << " | TimeRemaining=" << g_timeRemainingMs
         << "\n";
 }
+
+// Демонстрация работы
 
 int main()
 {
